@@ -13,15 +13,7 @@ function findAppRoot() {
     return exeDir;
   }
   
-  if (fs.existsSync(path.join(exeDir, '..', 'resources', 'app', 'package.json'))) {
-    return path.join(exeDir, '..');
-  }
-  
-  if (fs.existsSync(path.join(__dirname, '..', 'dist', 'index.html'))) {
-    return path.join(__dirname, '..');
-  }
-  
-  return path.join(__dirname, '..');
+  return exeDir;
 }
 
 function getResourcePath(relativePath) {
@@ -31,7 +23,7 @@ function getResourcePath(relativePath) {
 function createWindow() {
   appRoot = findAppRoot();
   
-  const iconPath = getResourcePath('icons/icon.png');
+  const iconPath = getResourcePath('icons/icon.ico');
   
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -40,7 +32,7 @@ function createWindow() {
     minHeight: 520,
     frame: false,
     transparent: true,
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    icon: fs.existsSync(iconPath) ? iconPath : getResourcePath('icons/icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

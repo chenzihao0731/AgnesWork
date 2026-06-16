@@ -4,6 +4,20 @@
 // - 在 Tauri 中：优先调用 Tauri 后端的读写命令（更安全的本地文件）
 // 本模块只负责 localStorage 层，Tauri 专用命令由 Rust 后端提供。
 
+export type ProviderType = "agnes" | "openai" | "deepseek" | "ollama" | "custom";
+
+export interface ProviderConfig {
+  type: ProviderType;
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  systemPrompt: string;
+  supportsImageGen: boolean;
+  workspacePath: string;
+}
+
 export interface PersistedMessage {
   role: "user" | "assistant";
   text: string;
@@ -21,6 +35,7 @@ export interface Conversation {
 export interface AppConfig {
   apiKey: string;
   activeConversationId?: string;
+  provider?: ProviderConfig;
 }
 
 const CONFIG_KEY = "agnes.agent.config.v2";
@@ -39,6 +54,34 @@ function readAllKeys(): string[] {
   return keys;
 }
 
+const DEFAULT_PROVIDER: ProviderConfig = {
+  type: "agnes",
+  apiKey: "",
+  baseUrl: "",
+  model: "",
+  temperature: 0.7,
+  maxTokens: 4096,
+  systemPrompt: "",
+  supportsImageGen: false,
+  workspacePath: "",
+};
+
+const PROVIDER_PRESETS: Record<ProviderType, Partial<ProviderConfig>> = {
+  agnes: { type: "agnes", baseUrl: "", model: "", supportsImageGen: true },
+  openai: { type: "openai", baseUrl: "https://api.openai.com/v1", model: "gpt-4o", supportsImageGen: true },
+  deepseek: { type: "deepseek", baseUrl: "https://api.deepseek.com/v1", model: "deepseek-chat", supportsImageGen: false },
+  ollama: { type: "ollama", baseUrl: "http://localhost:11434/v1", model: "llama3", supportsImageGen: false },
+  custom: { type: "custom", baseUrl: "", model: "", supportsImageGen: false },
+};
+
+export function getDefaultProvider(): ProviderConfig {
+  return { ...DEFAULT_PROVIDER };
+}
+
+export function getProviderPreset(type: ProviderType): Partial<ProviderConfig> {
+  return PROVIDER_PRESETS[type] ?? PROVIDER_PRESETS.custom;
+}
+
 export function loadConfig(): AppConfig {
   try {
     const raw = localStorage.getItem(CONFIG_KEY);
@@ -47,6 +90,7 @@ export function loadConfig(): AppConfig {
       return {
         apiKey: parsed.apiKey ?? "",
         activeConversationId: parsed.activeConversationId ?? "",
+        provider: parsed.provider ? { ...DEFAULT_PROVIDER, ...parsed.provider } : undefined,
       };
     }
   } catch {
@@ -55,8 +99,10 @@ export function loadConfig(): AppConfig {
   return { apiKey: "", activeConversationId: "" };
 }
 
-export function saveConfig(cfg: AppConfig) {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+export function saveConfig(cfg: Partial<AppConfig>) {
+  const existing = loadConfig();
+  const merged = { ...existing, ...cfg };
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(merged));
 }
 
 export function loadAllConversations(): Conversation[] {

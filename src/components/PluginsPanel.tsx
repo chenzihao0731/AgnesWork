@@ -77,16 +77,43 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* 头部 */}
+      <div
+        className="flex items-center justify-between px-4 py-3 rounded-xl"
+        style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, var(--accent), var(--accent-2))",
+              color: "#fff",
+            }}
+          >
+            <PluginIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-[13px] font-medium" style={{ color: "var(--text)" }}>
+              插件管理
+            </div>
+            <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
+              共 {items.length} 个插件
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 添加按钮 */}
       {!editingNew && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => startAdd("simple")}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[12.5px] font-medium transition-all"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all"
             style={{
-              background: "var(--surface)",
+              background: "var(--bg)",
               color: "var(--text-2)",
-              border: "1px dashed var(--border-2)",
+              border: "1px dashed var(--border)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--surface-2)";
@@ -94,21 +121,21 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
               e.currentTarget.style.borderColor = "var(--accent)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--surface)";
+              e.currentTarget.style.background = "var(--bg)";
               e.currentTarget.style.color = "var(--text-2)";
-              e.currentTarget.style.borderColor = "var(--border-2)";
+              e.currentTarget.style.borderColor = "var(--border)";
             }}
           >
-            <PlusIcon className="w-3.5 h-3.5" />
+            <PlusIcon className="w-4 h-4" />
             提示插件
           </button>
           <button
             onClick={() => startAdd("http_api")}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[12.5px] font-medium transition-all"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all"
             style={{
-              background: "var(--surface)",
+              background: "var(--bg)",
               color: "var(--text-2)",
-              border: "1px dashed var(--border-2)",
+              border: "1px dashed var(--border)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--surface-2)";
@@ -116,12 +143,12 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
               e.currentTarget.style.borderColor = "var(--accent)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--surface)";
+              e.currentTarget.style.background = "var(--bg)";
               e.currentTarget.style.color = "var(--text-2)";
-              e.currentTarget.style.borderColor = "var(--border-2)";
+              e.currentTarget.style.borderColor = "var(--border)";
             }}
           >
-            <PlusIcon className="w-3.5 h-3.5" />
+            <PlusIcon className="w-4 h-4" />
             HTTP 插件
           </button>
         </div>
@@ -339,20 +366,26 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
       <div className="space-y-2">
         {items.length === 0 && !editingNew && (
           <div
-            className="text-center text-[12px] py-6 rounded-lg"
+            className="text-center py-12 rounded-xl"
             style={{
               color: "var(--text-3)",
-              background: "var(--surface)",
-              border: "1px dashed var(--border-2)",
+              background: "var(--bg)",
+              border: "1px dashed var(--border)",
             }}
           >
-            还没有自定义插件
+            <div className="text-[36px] mb-2"></div>
+            <div className="text-[13px] font-medium mb-1" style={{ color: "var(--text-2)" }}>
+              还没有自定义插件
+            </div>
+            <div className="text-[11px]">
+              点击上方按钮添加提示插件或 HTTP 插件
+            </div>
           </div>
         )}
         {items.map((p) => (
           <div
             key={p.id}
-            className="rounded-xl p-3 transition-all"
+            className="rounded-xl p-4 transition-all"
             style={{
               background: p.enabled ? "var(--surface)" : "var(--bg)",
               border: "1px solid var(--border)",
@@ -371,9 +404,9 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5 mb-2">
                   <div
-                    className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                     style={{
                       background: p.enabled
                         ? "linear-gradient(135deg, var(--accent), var(--accent-2))"
@@ -382,37 +415,41 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
                     }}
                   >
                     {p.type === "http_api" ? (
-                      <LinkIcon className="w-3 h-3" />
+                      <LinkIcon className="w-4 h-4" />
                     ) : (
-                      <PluginIcon className="w-3 h-3" />
+                      <PluginIcon className="w-4 h-4" />
                     )}
                   </div>
-                  <span
-                    className="text-[13px] font-medium truncate"
-                    style={{ color: p.enabled ? "var(--text)" : "var(--text-2)" }}
-                  >
-                    {p.name}
-                  </span>
-                  <span
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium shrink-0"
-                    style={{
-                      background: "var(--surface-2)",
-                      color: "var(--text-3)",
-                      border: "1px solid var(--border)",
-                    }}
-                  >
-                    {p.type}
-                  </span>
-                </div>
-                <div
-                  className="text-[11.5px] mt-1.5 leading-relaxed"
-                  style={{ color: "var(--text-3)" }}
-                >
-                  {p.description}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-[13px] font-medium truncate"
+                        style={{ color: p.enabled ? "var(--text)" : "var(--text-2)" }}
+                      >
+                        {p.name}
+                      </span>
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium shrink-0"
+                        style={{
+                          background: "var(--surface-2)",
+                          color: "var(--text-3)",
+                          border: "1px solid var(--border)",
+                        }}
+                      >
+                        {p.type}
+                      </span>
+                    </div>
+                    <div
+                      className="text-[11px] mt-0.5 leading-relaxed"
+                      style={{ color: "var(--text-3)" }}
+                    >
+                      {p.description}
+                    </div>
+                  </div>
                 </div>
                 {p.type === "simple" && p.systemPrompt && (
                   <div
-                    className="mt-2 text-[11px] leading-relaxed rounded-md p-2 font-mono"
+                    className="mt-2 text-[11px] leading-relaxed rounded-lg p-2.5 font-mono"
                     style={{
                       color: "var(--text-3)",
                       background: "var(--bg)",
@@ -425,7 +462,7 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
                 )}
                 {p.type === "http_api" && p.api && (
                   <div
-                    className="mt-2 text-[11px] leading-relaxed rounded-md p-2 font-mono truncate"
+                    className="mt-2 text-[11px] leading-relaxed rounded-lg p-2.5 font-mono"
                     style={{
                       color: "var(--text-3)",
                       background: "var(--bg)",
@@ -433,7 +470,7 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
                     }}
                   >
                     <span
-                      className="inline-block mr-1.5 px-1 rounded text-[10px] font-semibold"
+                      className="inline-block mr-2 px-1.5 py-0.5 rounded text-[10px] font-semibold"
                       style={{
                         background: "var(--surface-2)",
                         color: p.api.method === "POST" ? "var(--warn)" : "var(--ok)",
@@ -449,27 +486,26 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => toggle(p.id)}
-                  className="relative w-9 h-5 rounded-full transition-all"
+                  className="relative w-11 h-6 rounded-full transition-all"
                   style={{
                     background: p.enabled
                       ? "linear-gradient(135deg, var(--accent), var(--accent-2))"
-                      : "var(--surface-2)",
-                    border: "1px solid var(--border)",
+                      : "var(--surface-3)",
                     boxShadow: p.enabled ? "0 2px 8px -2px var(--accent)" : "none",
                   }}
                   title={p.enabled ? "点击禁用" : "点击启用"}
                 >
                   <span
-                    className="absolute top-[1px] w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm"
+                    className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform"
                     style={{
-                      left: "2px",
-                      transform: p.enabled ? "translateX(16px)" : "translateX(0)",
+                      transform: p.enabled ? "translateX(20px)" : "translateX(0)",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                     }}
                   />
                 </button>
                 <button
                   onClick={() => remove(p.id)}
-                  className="w-7 h-7 rounded-md flex items-center justify-center transition-all"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
                   style={{
                     color: "var(--text-3)",
                     border: "1px solid transparent",
@@ -488,7 +524,7 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
                   }}
                   title="删除"
                 >
-                  <XIcon className="w-3.5 h-3.5" />
+                  <XIcon className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -497,15 +533,17 @@ export function PluginsPanel({ refreshSignal = 0 }: { refreshSignal?: number }) 
       </div>
 
       <div
-        className="text-[11px] pt-3 leading-relaxed"
+        className="text-[11px] pt-3 mt-4 leading-relaxed rounded-lg px-4 py-3"
         style={{
+          background: "var(--surface-2)",
+          border: "1px solid var(--border)",
           color: "var(--text-3)",
-          borderTop: "1px solid var(--border)",
         }}
       >
         <span className="inline-flex items-center gap-1 mr-1">
-          <SettingsIcon className="w-3 h-3" />
+          <SettingsIcon className="w-3.5 h-3.5" />
         </span>
+        <span style={{ color: "var(--text-2)", fontWeight: 500 }}>说明：</span>
         simple 型：只注入 system prompt。http_api 型：在对话中让 Agent 调用你的外部 API（会把响应当 tool result 处理）。
       </div>
     </div>

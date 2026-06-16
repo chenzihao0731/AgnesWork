@@ -395,3 +395,32 @@ export const CopyIcon = makeSvg(
     <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
   </>,
 );
+
+/** 关闭 */
+export const CloseIcon = makeSvg(
+  <>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </>,
+);
+
+/** 下拉箭头 */
+export const ChevronDownIcon = makeSvg(<path d="m6 9 6 6 6-6" />);
+
+/** 眼睛（显示） */
+export const EyeIcon = makeSvg(
+  <>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+    <circle cx="12" cy="12" r="3" />
+  </>,
+);
+
+/** 眼睛关闭（隐藏） */
+export const EyeOffIcon = makeSvg(
+  <>
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+    <path d="m14.12 14.12a3 3 0 1 1-4.24-4.24" />
+    <path d="m1 1 22 22" />
+  </>,
+);

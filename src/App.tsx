@@ -30,8 +30,14 @@ import {
 } from "./lib/storage/extensions";
 import { MessageBubble } from "./components/MessageBubble";
 import { SettingsPanel } from "./components/SettingsPanel";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar, type Tab } from "./components/Sidebar";
 import { RightPanel } from "./components/RightPanel";
+import { SkillsPanel } from "./components/SkillsPanel";
+import { PluginsPanel } from "./components/PluginsPanel";
+import { McPanel } from "./components/McPanel";
+import {
+  ChatIcon, EditIcon, TrashIcon, CheckCircleIcon,
+} from "./components/icons";
 import {
   getWorkspace,
   isDesktopEnv,
@@ -71,21 +77,16 @@ import {
 
 /** 根据配置创建对应的 LLM Provider 实例 */
 function makeProvider(apiKey: string): LLMProvider {
-  // 默认使用 Agnes Provider；未来可从 localStorage 读取 provider 类型配置
-  try {
-    const raw = localStorage.getItem("agnes.provider");
-    if (raw) {
-      const cfg = JSON.parse(raw);
-      if (cfg.type === "openai") {
-        return new OpenAICompatibleProvider({
-          apiKey,
-          baseUrl: cfg.baseUrl || "https://api.openai.com/v1",
-          model: cfg.model || "gpt-4o",
-          supportsImageGen: cfg.supportsImageGen ?? false,
-        });
-      }
-    }
-  } catch { /* ignore */ }
+  const cfg = loadConfig();
+  const p = cfg.provider;
+  if (p && p.type !== "agnes") {
+    return new OpenAICompatibleProvider({
+      apiKey: p.apiKey || apiKey,
+      baseUrl: p.baseUrl || "https://api.openai.com/v1",
+      model: p.model || "gpt-4o",
+      supportsImageGen: p.supportsImageGen ?? false,
+    });
+  }
   return new AgnesApiClient(apiKey);
 }
 
@@ -639,15 +640,27 @@ interface AppUiProps {
 }
 
 function AppUi(p: AppUiProps) {
+  const [tab, setTab] = useState<Tab>("conversations");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameText, setRenameText] = useState("");
   const activeConv = p.conversations.find((c) => c.id === p.activeId);
   const win = getWindowApi();
+
+  const commitRename = () => {
+    if (renamingId && renameText.trim()) {
+      p.onRename(renamingId, renameText.trim());
+    }
+    setRenamingId(null);
+    setRenameText("");
+  };
+
   return (
     <div className="h-full w-full flex flex-col" style={{ background: "linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%)", color: "var(--text)" }}>
       {/* 自定义标题栏 */}
       <div className="titlebar-drag shrink-0 h-9 px-4 flex items-center justify-between"
         style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-2">
-          <img src="/icons/icon.png" className="w-5 h-5 titlebar-no-drag" alt="" />
+          <img src="./icons/icon.png" className="w-5 h-5 titlebar-no-drag rounded-md" alt="icon" />
           <span className="text-[12px] font-semibold" style={{ color: "var(--text-2)" }}>AgnesWork</span>
         </div>
         <div className="flex items-center gap-1 titlebar-no-drag">
@@ -673,12 +686,11 @@ function AppUi(p: AppUiProps) {
       </div>
 
       <div className="flex-1 flex min-h-0">
-      <Sidebar
-        conversations={p.conversations} activeId={p.activeId}
-        onSelect={p.onSelect} onNewConversation={p.onNewConversation}
-        onDelete={p.onDelete} onRename={p.onRename}
-      />
+      <Sidebar tab={tab} onTabChange={setTab} theme={p.theme} onToggleTheme={p.toggle} onOpenSettings={() => p.setShowSettings(true)} onOpenHelp={() => p.setShowHelp(true)} />
+
       <main className="flex-1 flex flex-col min-w-0">
+        {tab === "conversations" && (
+          <>
         <header className="shrink-0 px-5 py-2 flex items-center justify-between gap-3"
           style={{ borderBottom: "1px solid var(--border)", background: "var(--bg)" }}>
           <div className="min-w-0 flex items-center gap-3">
@@ -697,15 +709,14 @@ function AppUi(p: AppUiProps) {
                   {activeConv?.title || "新对话"}
                 </button>
               )}
-              <div className="text-[11px] flex items-center gap-2 mt-0.5" style={{ color: "var(--text-3)" }}>
-                <span>{p.messages.filter((m) => m.role === "user").length} 条用户提问</span>
-                {p.activeGoalsForConv.length > 0 && (
+              {p.activeGoalsForConv.length > 0 && (
+                <div className="text-[11px] flex items-center gap-2 mt-0.5" style={{ color: "var(--text-3)" }}>
                   <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md"
                     style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>
                     <TargetIcon className="w-3 h-3" /> {p.activeGoalsForConv.length} 个目标
                   </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
           <HeaderRight {...p} />
@@ -833,6 +844,30 @@ function AppUi(p: AppUiProps) {
             </div>
           </div>
         </footer>
+          </>
+        )}
+
+        {tab === "skills" && (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollable">
+            <div className="max-w-3xl mx-auto px-6 py-6">
+              <SkillsPanel />
+            </div>
+          </div>
+        )}
+        {tab === "plugins" && (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollable">
+            <div className="max-w-3xl mx-auto px-6 py-6">
+              <PluginsPanel />
+            </div>
+          </div>
+        )}
+        {tab === "mcp" && (
+          <div className="flex-1 min-h-0 overflow-y-auto scrollable">
+            <div className="max-w-3xl mx-auto px-6 py-6">
+              <McPanel />
+            </div>
+          </div>
+        )}
       </main>
 
       {p.rightPanelOpen && (
@@ -885,33 +920,6 @@ function HeaderRight(p: {
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: p.hasKey ? "var(--ok)" : "var(--warn)", animation: p.hasKey ? "none" : "blink 1.2s ease-in-out infinite" }} />
         {p.hasKey ? "已连接" : "未配置 Key"}
       </span>
-
-      <button onClick={p.toggle}
-        title="切换主题"
-        className="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-        style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-2)"; }}>
-        {p.theme === "dark" ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
-      </button>
-
-      <button onClick={() => p.setShowSettings(true)}
-        className="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-        title="设置"
-        style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-2)"; }}>
-        <SettingsIcon className="w-4 h-4" />
-      </button>
-
-      <button onClick={() => p.setShowHelp(true)}
-        className="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-        title="命令与工具帮助"
-        style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-2)"; }}>
-        <HelpIcon className="w-4 h-4" />
-      </button>
 
       <button onClick={() => p.setRightPanelOpen(!p.rightPanelOpen)}
         className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] transition-all"

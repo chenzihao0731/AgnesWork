@@ -1,21 +1,36 @@
-# 忽略构建产物
+# 依赖
 node_modules/
+
+# 构建产物
 dist/
 .vite/
 .cache/
+
+# Tauri
 target/
 src-tauri/target/
 src-tauri/gen/
 .tauri/
 
+# Electron 打包
+release/
+AgnesWork/
+AgnesWork.exe
+AgnesWork.bat
+WebView2Loader.dll
+
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # IDE
 .vscode/
 .idea/
 *.swp
+
+# 日志
+debug.log
 
 # 本地配置
 .env.local
